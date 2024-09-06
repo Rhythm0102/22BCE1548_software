@@ -1,21 +1,24 @@
 from ultralytics import YOLO
 import cv2
-import matplotlib.pyplot as plt
-from tkinter import Tk, filedialog, Button, messagebox
 import numpy as np
+from tkinter import Tk, filedialog, Button, Label, messagebox
+from PIL import Image, ImageTk
 
 class YOLOv8Detector:
     def __init__(self, model_path):
         self.model = YOLO(model_path)
         self.window = Tk()
         self.setup_ui()
-
+        
     def setup_ui(self):
         self.window.title("YOLOv8 Object Detection")
+        self.window.geometry("800x600")
         self.new_image_button = Button(self.window, text="New Image", command=self.upload_and_detect)
         self.new_image_button.pack(pady=10)
         self.quit_button = Button(self.window, text="Quit", command=self.quit_app)
         self.quit_button.pack(pady=10)
+        self.image_label = Label(self.window)
+        self.image_label.pack(pady=10)
 
     def upload_and_detect(self):
         image_path = self.upload_image()
@@ -46,11 +49,13 @@ class YOLOv8Detector:
             color = (0, 0, 255) if class_id == 0 else (0, 255, 0)
             cv2.rectangle(image, (int(x1), int(y1)), (int(x2), int(y2)), color, 2)
             cv2.putText(image, label, (int(x1), int(y1) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
+
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        plt.figure(figsize=(10, 10))
-        plt.imshow(image_rgb)
-        plt.axis('off')
-        plt.show(block=True)
+        image_pil = Image.fromarray(image_rgb)
+        image_tk = ImageTk.PhotoImage(image_pil)
+        
+        self.image_label.config(image=image_tk)
+        self.image_label.image = image_tk
 
     def quit_app(self):
         self.window.destroy()
